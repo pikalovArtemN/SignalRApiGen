@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <SignAssembly>true</SignAssembly>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0;</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ui/dist/**/*" Exclude="**/*/index.html;**/*/*.map;**/*/*.json;**/*/*.md" />
+    <EmbeddedResource Include="index.html" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Routing"/>
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles"/>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded"/>
+    <PackageReference Include="System.Text.Json"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+  </ItemGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="DispatchToInnerBuilds">
+    <PropertyGroup>
+      <_CheckNodeModulesExists>./ui/node_modules</_CheckNodeModulesExists>
+    </PropertyGroup>
+    <Exec Condition="!Exists('$(_CheckNodeModulesExists)')" Command="npm install" ContinueOnError="true" WorkingDirectory="./ui" >
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="!Exists('$(_CheckNodeModulesExists)') AND '$(ErrorCode)' != '0'" Text="Node.js/npm is required to build this project." />
+  </Target>
+</Project>
